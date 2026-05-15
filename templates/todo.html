@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Routine Planner</title>
+
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<button onclick="toggleMode()" id="modeBtn"
+style="position:fixed; top:15px; left:15px;">
+🌙
+</button>
+
+<div id="globalTimer">⏱️ 00:00</div>
+
+<button onclick="goHome()">⬅ Dashboard</button>
+
+<h1>📅 Daily Routine</h1>
+
+<!-- ADD ROUTINE -->
+<form method="POST">
+
+<input
+name="title"
+placeholder="Routine Title (e.g. Morning Study)"
+required>
+
+<br>
+
+<textarea
+name="steps"
+placeholder="Write steps (one per line)"
+required></textarea>
+
+<br>
+
+<button type="submit">
+Add Routine
+</button>
+
+</form>
+
+<hr>
+
+<!-- ROUTINE LIST -->
+<div id="list">
+
+{% for r in routines %}
+
+<div class="routine">
+
+<h3>• {{ r[2] }}</h3>
+
+<ul>
+
+{% for step in r[3].split('\n') %}
+
+<li>{{ step }}</li>
+
+{% endfor %}
+<a href="/delete_todo/{{ r[0] }}">
+    <button>❌ Delete</button>
+</a>
+</ul>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+<script>
+
+function goHome(){
+    window.location.href = "/dashboard";
+}
+
+</script>
+
+<script>
+function toggleMode(){
+
+    document.body.classList.toggle("light");
+
+    let btn = document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+
+        localStorage.setItem("mode","light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        localStorage.setItem("mode","dark");
+
+        btn.innerText = "☀️";
+    }
+}
+
+// LOAD MODE
+document.addEventListener("DOMContentLoaded", function(){
+
+    let btn = document.getElementById("modeBtn");
+
+    let mode = localStorage.getItem("mode");
+
+    if(mode === "light"){
+
+        document.body.classList.add("light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        btn.innerText = "☀️";
+    }
+});
+</script>
+
+<script>
+setInterval(()=>{
+
+    let endTime =
+    localStorage.getItem("timerEnd");
+
+    if(!endTime){
+
+        document.getElementById("globalTimer").innerText =
+        "⏱️ 00:00";
+
+        return;
+    }
+
+    let remaining = Math.max(
+        0,
+        Math.floor((endTime - Date.now())/1000)
+    );
+
+    let m = String(
+        Math.floor(remaining/60)
+    ).padStart(2,'0');
+
+    let s = String(
+        remaining%60
+    ).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText =
+    `⏱️ ${m}:${s}`;
+
+}, 500);
+</script>
+
+</body>
+</html>

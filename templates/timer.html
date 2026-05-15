@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<button onclick="toggleMode()" id="modeBtn" style="position:fixed; top:15px; left:15px;">
+🌙
+</button>
+
+<!-- GLOBAL TIMER (optional but recommended) -->
+<div id="globalTimer" onclick="goHome()">⏱️ 00:00</div>
+
+<button onclick="goHome()">⬅ Dashboard</button>
+
+<h1>⏱️ Timer</h1>
+
+<input type="number" id="timeInput" placeholder="Enter seconds">
+<h2 id="display">00:00</h2>
+
+<button onclick="start()">Start</button>
+<button onclick="pause()">Pause</button>
+<button onclick="reset()">Reset</button>
+
+<audio id="sound">
+  <source src="https://www.soundjay.com/buttons/beep-07.wav">
+</audio>
+
+<script>
+function goHome(){ window.location.href = "/"; }
+
+let interval = null;
+let sound = null;
+
+// INIT SOUND
+window.onload = function(){
+    sound = document.getElementById("sound");
+
+    // preload sound
+    sound.load();
+
+    if(localStorage.getItem("timerEnd")){
+        runTimer();
+    }
+};
+
+// START
+function start(){
+    let input = parseInt(document.getElementById("timeInput").value);
+
+    if(!input){
+        alert("Enter seconds");
+        return;
+    }
+
+    let endTime = Date.now() + input * 1000;
+    localStorage.setItem("timerEnd", endTime);
+
+    runTimer();
+}
+
+// RUN
+function runTimer(){
+    clearInterval(interval);
+    interval = setInterval(update, 300); // smoother
+}
+
+// UPDATE
+function update(){
+    let endTime = localStorage.getItem("timerEnd");
+
+    if(!endTime){
+        document.getElementById("display").innerText = "00:00";
+        return;
+    }
+
+    let remaining = Math.max(0, Math.ceil((endTime - Date.now())/1000));
+
+    let m = String(Math.floor(remaining/60)).padStart(2,'0');
+    let s = String(remaining%60).padStart(2,'0');
+
+    document.getElementById("display").innerText = m + ":" + s;
+
+    if(remaining <= 0){
+        clearInterval(interval);
+        localStorage.removeItem("timerEnd");
+
+        // 🔊 FORCE SOUND PLAY
+        sound.currentTime = 0;
+        sound.play().catch(()=>{});
+
+        alert("⏰ Time up!");
+    }
+}
+
+// PAUSE
+function pause(){
+    localStorage.removeItem("timerEnd");
+    clearInterval(interval);
+}
+
+// RESET
+function reset(){
+    localStorage.removeItem("timerEnd");
+    clearInterval(interval);
+    document.getElementById("display").innerText = "00:00";
+}
+
+// GLOBAL TIMER
+setInterval(()=>{
+    let endTime = localStorage.getItem("timerEnd");
+
+    if(!endTime){
+        document.getElementById("globalTimer").innerText = "⏱️ 00:00";
+        return;
+    }
+
+    let remaining = Math.max(0, Math.ceil((endTime - Date.now())/1000));
+
+    let m = String(Math.floor(remaining/60)).padStart(2,'0');
+    let s = String(remaining%60).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText = `⏱️ ${m}:${s}`;
+}, 300);
+</script>
+
+<script>
+function toggleMode(){
+    document.body.classList.toggle("light");
+
+    let btn = document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+        localStorage.setItem("mode","light");
+        btn.innerText = "🌙"; // shows you can switch to dark
+    } else {
+        localStorage.setItem("mode","dark");
+        btn.innerText = "☀️"; // shows you can switch to light
+    }
+}
+
+// LOAD MODE
+document.addEventListener("DOMContentLoaded", function(){
+    let btn = document.getElementById("modeBtn");
+    let mode = localStorage.getItem("mode");
+
+    if(mode === "light"){
+        document.body.classList.add("light");
+        btn.innerText = "🌙";
+    } else {
+        btn.innerText = "☀️";
+    }
+});
+</script>
+
+</body>
+</html>

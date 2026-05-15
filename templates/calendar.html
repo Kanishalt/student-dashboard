@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Planner</title>
+
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<button onclick="toggleMode()" id="modeBtn"
+style="position:fixed; top:15px; left:15px;">
+🌙
+</button>
+
+<div id="globalTimer">⏱️ 00:00</div>
+
+<button onclick="goHome()">⬅ Dashboard</button>
+
+<h1>📅 Exam Planner</h1>
+
+<!-- ADD EXAM -->
+<form method="POST">
+
+<input
+type="text"
+name="title"
+placeholder="Exam name"
+required>
+
+<input
+type="date"
+name="date"
+required>
+
+<button type="submit">
+Add
+</button>
+
+</form>
+
+<hr>
+
+<!-- EXAM LIST -->
+<ul id="examList">
+
+{% for e in exams %}
+
+<li class="card">
+
+<b>{{ e[2] }}</b>
+<br>
+
+{{ e[3] }}
+
+<br><br>
+
+<button onclick="window.location.href='/delete_exam/{{ e[0] }}'">
+❌ Delete
+</button>
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+<script>
+
+function goHome(){
+    window.location.href="/dashboard";
+}
+
+</script>
+
+<script>
+setInterval(()=>{
+
+    let endTime =
+    localStorage.getItem("timerEnd");
+
+    if(!endTime){
+
+        document.getElementById("globalTimer").innerText =
+        "⏱️ 00:00";
+
+        return;
+    }
+
+    let remaining = Math.max(
+        0,
+        Math.floor((endTime - Date.now())/1000)
+    );
+
+    let m = String(
+        Math.floor(remaining/60)
+    ).padStart(2,'0');
+
+    let s = String(
+        remaining%60
+    ).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText =
+    `⏱️ ${m}:${s}`;
+
+}, 500);
+</script>
+
+<script>
+function toggleMode(){
+
+    document.body.classList.toggle("light");
+
+    let btn = document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+
+        localStorage.setItem("mode","light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        localStorage.setItem("mode","dark");
+
+        btn.innerText = "☀️";
+    }
+}
+
+// LOAD MODE
+document.addEventListener("DOMContentLoaded", function(){
+
+    let btn = document.getElementById("modeBtn");
+
+    let mode = localStorage.getItem("mode");
+
+    if(mode === "light"){
+
+        document.body.classList.add("light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        btn.innerText = "☀️";
+    }
+});
+</script>
+
+</body>
+</html>

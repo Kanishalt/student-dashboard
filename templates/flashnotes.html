@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flash Notes</title>
+
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<button onclick="toggleMode()" id="modeBtn"
+style="position:fixed; top:7px; right:105px;">
+🌙
+</button>
+
+<div id="globalTimer">⏱️ 00:00</div>
+
+<button onclick="goHome()">⬅ Dashboard</button>
+
+<h1>📌 Flash Notes</h1>
+
+<!-- ADD FLASHNOTE -->
+<form method="POST">
+
+<input
+name="topic"
+placeholder="Topic (e.g. Photosynthesis)"
+required>
+
+<br>
+
+<textarea
+name="content"
+placeholder="Write key points (one per line)"
+required></textarea>
+
+<br>
+
+<button type="submit">
+Add Flash Note
+</button>
+
+</form>
+
+<hr>
+
+<!-- DISPLAY FLASHNOTES -->
+
+{% for note in notes %}
+
+<div class="card">
+
+{% set parts = note[2].split('|||') %}
+
+<h3>📌 {{ parts[0] }}</h3>
+
+<ul>
+
+{% for point in parts[1].split('\n') %}
+
+<li>{{ point }}</li>
+
+{% endfor %}
+<a href="/delete_flashnote/{{ note[0] }}">
+    <button>❌ Delete</button>
+</a>
+
+</ul>
+
+</div>
+
+{% endfor %}
+
+<script>
+
+function goHome(){
+    window.location.href="/dashboard";
+}
+
+</script>
+
+<script>
+setInterval(()=>{
+
+    let endTime =
+    localStorage.getItem("timerEnd");
+
+    if(!endTime){
+
+        document.getElementById("globalTimer").innerText =
+        "⏱️ 00:00";
+
+        return;
+    }
+
+    let remaining = Math.max(
+        0,
+        Math.floor((endTime - Date.now())/1000)
+    );
+
+    let m = String(
+        Math.floor(remaining/60)
+    ).padStart(2,'0');
+
+    let s = String(
+        remaining%60
+    ).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText =
+    `⏱️ ${m}:${s}`;
+
+}, 500);
+</script>
+
+<script>
+function toggleMode(){
+
+    document.body.classList.toggle("light");
+
+    let btn = document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+
+        localStorage.setItem("mode","light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        localStorage.setItem("mode","dark");
+
+        btn.innerText = "☀️";
+    }
+}
+
+// LOAD MODE
+document.addEventListener("DOMContentLoaded", function(){
+
+    let btn = document.getElementById("modeBtn");
+
+    let mode = localStorage.getItem("mode");
+
+    if(mode === "light"){
+
+        document.body.classList.add("light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        btn.innerText = "☀️";
+    }
+});
+</script>
+
+</body>
+</html>

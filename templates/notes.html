@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notes</title>
+
+<link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<button onclick="toggleMode()" id="modeBtn" style="position:fixed; top:15px; left:15px;">
+🌙
+</button>
+
+<div id="globalTimer">⏱️ 00:00</div>
+
+<button onclick="goHome()">⬅ Dashboard</button>
+
+<h1>📝 Notes</h1>
+
+<!-- FORM -->
+<form method="POST">
+
+    <!-- FILE NAME -->
+    <input
+    name="filename"
+    id="filename"
+    placeholder="File name (e.g. notes.txt)"
+    required>
+
+    <br>
+
+    <!-- NOTE AREA -->
+    <textarea
+    name="content"
+    id="notes"
+    placeholder="Write your notes..."
+    required></textarea>
+
+    <br>
+
+    <!-- BUTTONS -->
+    <button type="submit">
+        💾 Save in App
+    </button>
+
+    <button type="button" onclick="downloadFile()">
+        📥 Download File
+    </button>
+
+</form>
+
+<hr>
+
+<!-- SAVED NOTES -->
+<h3>Saved Notes</h3>
+
+<select id="savedNotes">
+
+    {% for note in notes %}
+
+
+
+        <option
+value="{{ note[0] }}"
+data-content="{{ note[3] }}"
+data-filename="{{ note[2] }}">
+
+{{ note[2] }}
+
+</option>
+
+    {% endfor %}
+
+</select>
+
+<br><br>
+
+<button onclick="loadNote()">
+📂 Open
+</button>
+
+<button onclick="deleteNote()">
+❌ Delete
+</button>
+
+<script>
+
+function goHome(){
+    window.location.href="/dashboard";
+}
+
+// DOWNLOAD FILE
+function downloadFile(){
+
+    let text = document.getElementById("notes").value;
+
+    let name =
+    document.getElementById("filename").value || "notes.txt";
+
+    let blob = new Blob(
+        [text],
+        { type: "text/plain" }
+    );
+
+    let a = document.createElement("a");
+
+    a.href = URL.createObjectURL(blob);
+
+    a.download = name;
+
+    a.click();
+}
+
+// LOAD NOTE
+function loadNote(){
+
+    let select =
+    document.getElementById("savedNotes");
+
+    let selected =
+    select.options[select.selectedIndex];
+
+    document.getElementById("notes").value =
+    selected.dataset.content;
+
+    document.getElementById("filename").value =
+    selected.dataset.filename;
+}
+
+// DELETE NOTE
+function deleteNote(){
+
+    let select =
+    document.getElementById("savedNotes");
+
+    let id = select.value;
+
+    if(!id) return;
+
+    window.location.href =
+    "/delete_note/" + id;
+}
+
+</script>
+
+<script>
+function toggleMode(){
+
+    document.body.classList.toggle("light");
+
+    let btn = document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+
+        localStorage.setItem("mode","light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        localStorage.setItem("mode","dark");
+
+        btn.innerText = "☀️";
+    }
+}
+
+// LOAD MODE
+document.addEventListener("DOMContentLoaded", function(){
+
+    let btn = document.getElementById("modeBtn");
+
+    let mode = localStorage.getItem("mode");
+
+    if(mode === "light"){
+
+        document.body.classList.add("light");
+
+        btn.innerText = "🌙";
+
+    } else {
+
+        btn.innerText = "☀️";
+    }
+});
+</script>
+
+<script>
+setInterval(()=>{
+
+    let endTime =
+    localStorage.getItem("timerEnd");
+
+    if(!endTime){
+
+        document.getElementById("globalTimer").innerText =
+        "⏱️ 00:00";
+
+        return;
+    }
+
+    let remaining = Math.max(
+        0,
+        Math.floor((endTime - Date.now())/1000)
+    );
+
+    let m = String(
+        Math.floor(remaining/60)
+    ).padStart(2,'0');
+
+    let s = String(
+        remaining%60
+    ).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText =
+    `⏱️ ${m}:${s}`;
+
+}, 500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+
+<link rel="stylesheet" href="/static/style.css">
+
+</head>
+
+<body>
+
+<div id="globalTimer">⏱️ 00:00</div>
+
+<div class="header">
+    <h2>👋 Hi there</h2>
+    <p>Stay focused, you got this 💪</p>
+</div>
+
+<button onclick="toggleMode()" id="modeBtn"
+style="position:fixed; top:7px; right:105px;">
+🌙
+</button>
+
+<div class="container">
+
+    <h1>📚 Student Dashboard</h1>
+
+    <!-- NEXT EXAM -->
+    <div class="card">
+        <h2>📅 Upcoming Exam</h2>
+
+        <p id="nextExam">
+            Loading...
+        </p>
+    </div>
+
+    <!-- ALL EXAMS -->
+    <div class="card">
+
+        <h2>🗓️ All Exams</h2>
+
+        {% for exam in exams %}
+
+        <p>
+            {{ exam[2] }} - {{ exam[3] }}
+        </p>
+
+        {% else %}
+
+        <p>No exams added yet</p>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- MENU -->
+    <div class="menu">
+
+        <div onclick="go('notes')">
+            📝 Notes
+        </div>
+
+        <div onclick="go('flashcards')">
+            🧠 Flash Cards
+        </div>
+
+        <div onclick="go('timer')">
+            ⏱️ Timer
+        </div>
+
+        <div onclick="go('todo')">
+            🎯 Routine
+        </div>
+
+        <div onclick="go('calendar')">
+            📅 Exams
+        </div>
+
+        <div onclick="go('flashnotes')">
+            📌 Flash Notes
+        </div>
+
+    </div>
+
+    <br>
+
+    <button onclick="window.location.href='/logout'">
+        🚪 Logout
+    </button>
+
+</div>
+
+<script>
+
+function go(page){
+    window.location.href = "/" + page;
+}
+
+</script>
+
+<!-- NEXT EXAM SCRIPT -->
+<script>
+
+function showNextExam(){
+
+    let exams = [
+    {% for exam in exams %}
+    {
+        title: "{{ exam[2] }}",
+        date: "{{ exam[3] }}"
+    },
+    {% endfor %}
+    ];
+
+    if(exams.length === 0){
+
+        document.getElementById("nextExam").innerText =
+        "📅 No upcoming exams";
+
+        return;
+    }
+
+    let today = new Date();
+
+    today.setHours(0,0,0,0);
+
+    let futureExams = exams
+
+    .map(e => {
+
+        let d = new Date(e.date);
+
+        d.setHours(0,0,0,0);
+
+        return {
+
+            title: e.title,
+            date: e.date,
+            d: d
+        };
+
+    })
+
+    .filter(e => e.d >= today)
+
+    .sort((a,b) => a.d - b.d);
+
+    if(futureExams.length === 0){
+
+        document.getElementById("nextExam").innerText =
+        "📅 No upcoming exams";
+    }
+
+    else{
+
+        let next = futureExams[0];
+
+        let diffTime = next.d - today;
+
+        let diffDays = Math.round(
+            diffTime / (1000 * 60 * 60 * 24)
+        );
+
+        let options = {
+
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        };
+
+        let formattedDate =
+        next.d.toLocaleDateString(undefined, options);
+
+        let message = "";
+
+        if(diffDays === 0){
+
+            message =
+            `📢 ${next.title} is TODAY!`;
+
+        }
+
+        else if(diffDays === 1){
+
+            message =
+            `📢 ${next.title} is TOMORROW!`;
+
+        }
+
+        else{
+
+            message =
+            `📢 ${next.title} in ${diffDays} days (${formattedDate})`;
+
+        }
+
+        document.getElementById("nextExam").innerText =
+        message;
+    }
+}
+
+showNextExam();
+
+</script>
+
+<!-- DARK MODE -->
+<script>
+
+function toggleMode(){
+
+    document.body.classList.toggle("light");
+
+    let btn =
+    document.getElementById("modeBtn");
+
+    if(document.body.classList.contains("light")){
+
+        localStorage.setItem("mode","light");
+
+        btn.innerText = "🌙";
+
+    }
+
+    else{
+
+        localStorage.setItem("mode","dark");
+
+        btn.innerText = "☀️";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    let btn =
+    document.getElementById("modeBtn");
+
+    let mode =
+    localStorage.getItem("mode");
+
+    if(mode === "light"){
+
+        document.body.classList.add("light");
+
+        btn.innerText = "🌙";
+    }
+
+    else{
+
+        btn.innerText = "☀️";
+    }
+});
+
+</script>
+
+<!-- GLOBAL TIMER -->
+<script>
+
+setInterval(()=>{
+
+    let endTime =
+    localStorage.getItem("timerEnd");
+
+    if(!endTime){
+
+        document.getElementById("globalTimer").innerText =
+        "⏱️ 00:00";
+
+        return;
+    }
+
+    let remaining = Math.max(
+        0,
+        Math.floor((endTime - Date.now())/1000)
+    );
+
+    let m = String(
+        Math.floor(remaining/60)
+    ).padStart(2,'0');
+
+    let s = String(
+        remaining%60
+    ).padStart(2,'0');
+
+    document.getElementById("globalTimer").innerText =
+    `⏱️ ${m}:${s}`;
+
+}, 500);
+
+</script>
+
+</body>
+</html>
