@@ -69,8 +69,7 @@ CREATE TABLE IF NOT EXISTS flashnotes (
 
 conn.commit()
 
-app.secret_key = "wdfghjhgherhgfdfgfd12345"
-
+app.secret_key = os.environ.get("SECRET_KEY")
 EMAIL = os.environ.get("EMAIL")
 APP_PASSWORD = os.environ.get("APP_PASSWORD")
 
@@ -80,12 +79,21 @@ APP_PASSWORD = os.environ.get("APP_PASSWORD")
 # =========================
 
 def send_otp(receiver, otp):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
+
+    server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
+
     server.starttls()
 
     server.login(EMAIL, APP_PASSWORD)
 
-    message = f"Subject: Your OTP Code\n\nYour OTP is: {otp}\n\nWarning: Do not share this with anyone\n\nYour OTP's Validity will end in 5 mins"
+    message = f"""Subject: Your OTP Code
+
+Your OTP is: {otp}
+
+Warning: Do not share this with anyone.
+
+OTP valid for 5 minutes.
+"""
 
     server.sendmail(EMAIL, receiver, message)
 
