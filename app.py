@@ -1,3 +1,4 @@
+import requests
 import os
 from datetime import timedelta
 from flask import Flask, render_template, request, redirect, session
@@ -71,7 +72,7 @@ conn.commit()
 
 app.secret_key = os.environ.get("SECRET_KEY")
 EMAIL = os.environ.get("EMAIL")
-APP_PASSWORD = os.environ.get("APP_PASSWORD")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY ")
 
 
 # =========================
@@ -80,24 +81,38 @@ APP_PASSWORD = os.environ.get("APP_PASSWORD")
 
 def send_otp(receiver, otp):
 
-    server = smtplib.SMTP('smtp.gmail.com', 587, timeout=10)
+    url = "https://api.brevo.com/v3/smtp/email"
 
-    server.starttls()
+    headers = {
+        "accept": "application/json",
+        "api-key": BREVO_API_KEY,
+        "content-type": "application/json"
+    }
 
-    server.login(EMAIL, APP_PASSWORD)
+    data = {
+        "sender": {
+            "name": "Student Dashboard",
+            "email": EMAIL
+        },
 
-    message = f"""Subject: Your OTP Code
+        "to": [
+            {
+                "email": receiver
+            }
+        ],
 
-Your OTP is: {otp}
+        "subject": "Your OTP Code",
 
-Warning: Do not share this with anyone.
+        "htmlContent": f"""
+        <h2>Your OTP is: {otp}</h2>
 
-OTP valid for 5 minutes.
-"""
+        <p>OTP valid for 5 minutes.</p>
 
-    server.sendmail(EMAIL, receiver, message)
+        <p>Do not share this code.</p>
+        """
+    }
 
-    server.quit()
+    requests.post(url, json=data, headers=headers)
 
 
 # =========================
