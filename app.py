@@ -72,7 +72,7 @@ conn.commit()
 
 app.secret_key = os.environ.get("SECRET_KEY")
 EMAIL = os.environ.get("EMAIL")
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY ")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 
 
 # =========================
