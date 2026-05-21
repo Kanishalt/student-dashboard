@@ -13,19 +13,19 @@
 
     <p>Enter the 6-digit code sent to your email</p>
 
-{% if error %}
+    {% if error %}
 
-<p style="
-color:#ffb3b3;
-font-weight:bold;
-margin-top:15px;
-font-size:18px;
-animation:shake 0.3s;
-">
-{{ error }}
-</p>
+    <p style="
+    color:#ffb3b3;
+    font-weight:bold;
+    margin-top:15px;
+    font-size:18px;
+    animation:shake 0.3s;
+    ">
+    {{ error }}
+    </p>
 
-{% endif %}
+    {% endif %}
 
     <form method="POST" id="otpForm">
 
@@ -34,12 +34,14 @@ animation:shake 0.3s;
 
         <!-- OTP BOXES -->
         <div class="otp-boxes">
+
             <input type="text" maxlength="1" class="otp">
             <input type="text" maxlength="1" class="otp">
             <input type="text" maxlength="1" class="otp">
             <input type="text" maxlength="1" class="otp">
             <input type="text" maxlength="1" class="otp">
             <input type="text" maxlength="1" class="otp">
+
         </div>
 
         <button type="submit">
@@ -48,10 +50,17 @@ animation:shake 0.3s;
 
     </form>
 
-    <p id="timer">Resend OTP in 30s</p>
+    <p id="timerText">
+        Resend OTP in 30s
+    </p>
 
-    <button id="resendBtn" disabled>
-        Resend OTP
+    <button
+    id="resendBtn"
+    disabled
+    onclick="window.location.href='/resend_otp'">
+
+    Resend OTP
+
     </button>
 
 </div>
@@ -86,6 +95,7 @@ inputs.forEach((input, index)=>{
 
 // combine otp
 function updateOtp(){
+
     let otp = "";
 
     inputs.forEach(i=>{
@@ -95,32 +105,33 @@ function updateOtp(){
     document.getElementById("finalOtp").value = otp;
 }
 
-// TIMER
-let time = 30;
+// RESEND TIMER
+let timeLeft = 30;
 
-let timer = setInterval(()=>{
+let timerText =
+document.getElementById("timerText");
 
-    time--;
+let btn =
+document.getElementById("resendBtn");
 
-    document.getElementById("timer").innerText =
-    `Resend OTP in ${time}s`;
+let countdown = setInterval(() => {
 
-    if(time <= 0){
+    timeLeft--;
 
-        clearInterval(timer);
+    timerText.innerText =
+    `Resend OTP in ${timeLeft}s`;
 
-        document.getElementById("timer").innerText =
-        "Didn't receive OTP?";
+    if(timeLeft <= 0){
 
-        document.getElementById("resendBtn").disabled = false;
+        clearInterval(countdown);
+
+        timerText.innerText =
+        "You can resend OTP now";
+
+        btn.disabled = false;
     }
 
-},1000);
-
-// resend
-document.getElementById("resendBtn").onclick = ()=>{
-    location.reload();
-};
+}, 1000);
 
 </script>
 

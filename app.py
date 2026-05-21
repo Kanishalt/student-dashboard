@@ -187,6 +187,26 @@ def verify():
 
 
 # =========================
+# RESEND OTP
+# =========================
+
+@app.route("/resend_otp")
+def resend_otp():
+
+    if "email" not in session:
+        return redirect("/")
+
+    otp = str(random.randint(100000, 999999))
+
+    session["otp"] = otp
+    session["otp_time"] = time.time()
+
+    send_otp(session["email"], otp)
+
+    return redirect("/verify")
+
+
+# =========================
 # DASHBOARD
 # =========================
 
